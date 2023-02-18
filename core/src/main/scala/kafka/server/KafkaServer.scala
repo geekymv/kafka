@@ -210,6 +210,7 @@ class KafkaServer(val config: KafkaConfig, time: Time = SystemTime, threadNamePr
         logManager.startup()
 
         /* generate brokerId */
+        // 生成 brokerId
         config.brokerId =  getBrokerId
         this.logIdent = "[Kafka Server " + config.brokerId + "], "
 
@@ -270,6 +271,7 @@ class KafkaServer(val config: KafkaConfig, time: Time = SystemTime, threadNamePr
         kafkaHealthcheck.startup()
 
         // Now that the broker id is successfully registered via KafkaHealthcheck, checkpoint it
+        // 持久化 brokerId 到 logDir/meta.properties
         checkpointBrokerId(config.brokerId)
 
         /* register broker metrics */
@@ -319,6 +321,7 @@ class KafkaServer(val config: KafkaConfig, time: Time = SystemTime, threadNamePr
                                               config.zkSessionTimeoutMs,
                                               config.zkConnectionTimeoutMs,
                                               secureAclsEnabled)
+      // 创建chroot目录
       zkClientForChrootCreation.makeSurePersistentPathExists(chroot)
       info(s"Created zookeeper path $chroot")
       zkClientForChrootCreation.zkClient.close()
@@ -688,9 +691,10 @@ class KafkaServer(val config: KafkaConfig, time: Time = SystemTime, threadNamePr
         s"Configured broker.id $brokerId doesn't match stored broker.id ${brokerIdSet.last} in meta.properties. " +
         s"If you moved your data, make sure your configured broker.id matches. " +
         s"If you intend to create a new broker, you should remove all data in your data directories (log.dirs).")
-    else if(brokerIdSet.isEmpty && brokerId < 0 && config.brokerIdGenerationEnable)  // generate a new brokerId from Zookeeper
+    else if(brokerIdSet.isEmpty && brokerId < 0 && config.brokerIdGenerationEnable) {  // generate a new brokerId from Zookeeper
+      // 生成一个brokeId
       brokerId = generateBrokerId
-    else if(brokerIdSet.size == 1) // pick broker.id from meta.properties
+    } else if(brokerIdSet.size == 1) // pick broker.id from meta.properties
       brokerId = brokerIdSet.last
 
     brokerId

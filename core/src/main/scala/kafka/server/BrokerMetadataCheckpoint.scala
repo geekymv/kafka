@@ -29,6 +29,7 @@ case class BrokerMetadata(brokerId: Int)
   */
 class BrokerMetadataCheckpoint(val file: File) extends Logging {
   private val lock = new Object()
+  // 删除.tmp临时文件
   new File(file + ".tmp").delete() // try to delete any existing temp files for cleanliness
 
   def write(brokerMetadata: BrokerMetadata) = {
@@ -41,8 +42,10 @@ class BrokerMetadataCheckpoint(val file: File) extends Logging {
         val fileOutputStream = new FileOutputStream(temp)
         brokerMetaProps.store(fileOutputStream,"")
         fileOutputStream.flush()
+        // 同步写入磁盘
         fileOutputStream.getFD().sync()
         fileOutputStream.close()
+        // 修改.tmp文件名
         Utils.atomicMoveWithFallback(temp.toPath, file.toPath)
       } catch {
         case ie: IOException =>
