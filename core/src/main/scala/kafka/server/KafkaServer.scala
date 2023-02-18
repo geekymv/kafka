@@ -216,6 +216,7 @@ class KafkaServer(val config: KafkaConfig, time: Time = SystemTime, threadNamePr
 
         metadataCache = new MetadataCache(config.brokerId)
 
+        // 创建并启动 SocketServer
         socketServer = new SocketServer(config, metrics, kafkaMetricsTime)
         socketServer.startup()
 

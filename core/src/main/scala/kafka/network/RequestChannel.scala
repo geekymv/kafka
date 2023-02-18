@@ -184,8 +184,10 @@ class RequestChannel(val numProcessors: Int, val queueSize: Int) extends KafkaMe
   private var responseListeners: List[(Int) => Unit] = Nil
   private val requestQueue = new ArrayBlockingQueue[RequestChannel.Request](queueSize)
   private val responseQueues = new Array[BlockingQueue[RequestChannel.Response]](numProcessors)
-  for(i <- 0 until numProcessors)
+  for(i <- 0 until numProcessors) {
+    // 每个 Processor 线程对应一个 response queue
     responseQueues(i) = new LinkedBlockingQueue[RequestChannel.Response]()
+  }
 
   newGauge(
     "RequestQueueSize",
