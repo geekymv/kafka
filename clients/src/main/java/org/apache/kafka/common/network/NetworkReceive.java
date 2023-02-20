@@ -78,12 +78,14 @@ public class NetworkReceive implements Receive {
     public long readFromReadableChannel(ReadableByteChannel channel) throws IOException {
         int read = 0;
         if (size.hasRemaining()) {
+            // 从 socketChannel 中读取消息体长度
             int bytesRead = channel.read(size);
             if (bytesRead < 0)
                 throw new EOFException();
             read += bytesRead;
             if (!size.hasRemaining()) {
                 size.rewind();
+                // 消息体长度
                 int receiveSize = size.getInt();
                 if (receiveSize < 0)
                     throw new InvalidReceiveException("Invalid receive (size = " + receiveSize + ")");
@@ -94,6 +96,7 @@ public class NetworkReceive implements Receive {
             }
         }
         if (buffer != null) {
+            // 从 socketChannel 中读取消息内容
             int bytesRead = channel.read(buffer);
             if (bytesRead < 0)
                 throw new EOFException();

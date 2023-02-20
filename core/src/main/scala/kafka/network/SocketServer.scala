@@ -375,7 +375,7 @@ private[kafka] class Processor(val id: Int,
                                maxRequestSize: Int,
                                requestChannel: RequestChannel,
                                connectionQuotas: ConnectionQuotas,
-                               connectionsMaxIdleMs: Long,
+                               connectionsMaxIdleMs: Long, // 10 * 60 * 1000L
                                protocol: SecurityProtocol,
                                channelConfigs: java.util.Map[String, _],
                                metrics: Metrics) extends AbstractServerThread(connectionQuotas) with KafkaMetricsGroup {
@@ -428,8 +428,9 @@ private[kafka] class Processor(val id: Int,
         configureNewConnections()
         // register any new responses for writing
         processNewResponses()
-        // TODO
+        // 从 socketChannle 中读取消息
         poll()
+        // 将数据封装成 request 放入 requestChannel requestQueue
         processCompletedReceives()
         processCompletedSends()
         processDisconnected()
@@ -552,7 +553,7 @@ private[kafka] class Processor(val id: Int,
    */
   private def configureNewConnections() {
     while (!newConnections.isEmpty) {
-      // socketChannel
+      // 从队列中取出 socketChannel
       val channel = newConnections.poll()
       try {
         debug(s"Processor $id listening to new connection from ${channel.socket.getRemoteSocketAddress}")
@@ -560,6 +561,7 @@ private[kafka] class Processor(val id: Int,
         val localPort = channel.socket().getLocalPort
         val remoteHost = channel.socket().getInetAddress.getHostAddress
         val remotePort = channel.socket().getPort
+        // 构造 connectionId
         val connectionId = ConnectionId(localHost, localPort, remoteHost, remotePort).toString
         // 注册 op_read 事件
         selector.register(connectionId, channel)

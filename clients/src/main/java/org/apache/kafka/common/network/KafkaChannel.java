@@ -131,7 +131,7 @@ public class KafkaChannel {
         if (receive == null) {
             receive = new NetworkReceive(maxReceiveSize, id);
         }
-
+        // 从 socketChannel 中读取数据
         receive(receive);
         if (receive.complete()) {
             receive.payload().rewind();
