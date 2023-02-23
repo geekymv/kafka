@@ -92,20 +92,25 @@ import java.util.concurrent.atomic.AtomicReference;
  * The producer consists of a pool of buffer space that holds records that haven't yet been transmitted to the server
  * as well as a background I/O thread that is responsible for turning these records into requests and transmitting them
  * to the cluster. Failure to close the producer after use will leak these resources.
+ * 缓冲池存放消息，I/O 线程负责将消息发送到 cluster
+ * 最后要关闭 producer
  * <p>
  * The {@link #send(ProducerRecord) send()} method is asynchronous. When called it adds the record to a buffer of pending record sends
  * and immediately returns. This allows the producer to batch together individual records for efficiency.
  * <p>
  * The <code>acks</code> config controls the criteria under which requests are considered complete. The "all" setting
  * we have specified will result in blocking on the full commit of the record, the slowest but most durable setting.
+ * acks 消息发送成功的标准
  * <p>
  * If the request fails, the producer can automatically retry, though since we have specified <code>retries</code>
  * as 0 it won't. Enabling retries also opens up the possibility of duplicates (see the documentation on
  * <a href="http://kafka.apache.org/documentation.html#semantics">message delivery semantics</a> for details).
+ * retries 指定重试次数，消息可能重复
  * <p>
  * The producer maintains buffers of unsent records for each partition. These buffers are of a size specified by
  * the <code>batch.size</code> config. Making this larger can result in more batching, but requires more memory (since we will
  * generally have one of these buffers for each active partition).
+ * batch.size 每个 partition 的缓冲大小
  * <p>
  * By default a buffer is available to send immediately even if there is additional unused space in the buffer. However if you
  * want to reduce the number of requests you can set <code>linger.ms</code> to something greater than 0. This will
@@ -116,11 +121,15 @@ import java.util.concurrent.atomic.AtomicReference;
  * records that arrive close together in time will generally batch together even with <code>linger.ms=0</code> so under heavy load
  * batching will occur regardless of the linger configuration; however setting this to something larger than 0 can lead to fewer, more
  * efficient requests when not under maximal load at the cost of a small amount of latency.
+ * linger.ms 等待更多消息添加到 batch 的时间，可能增加消息延迟
+ * linger.ms = 0 也会将相近到达的消息一起放入 batch
  * <p>
  * The <code>buffer.memory</code> controls the total amount of memory available to the producer for buffering. If records
  * are sent faster than they can be transmitted to the server then this buffer space will be exhausted. When the buffer space is
  * exhausted additional send calls will block. The threshold for time to block is determined by <code>max.block.ms</code> after which it throws
  * a TimeoutException.
+ * buffer.memory 控制 producer 缓冲总内存
+ * 当 buffer 满了，send 方法会阻塞，超过 max.block.ms 时间会报 TimeoutException
  * <p>
  * The <code>key.serializer</code> and <code>value.serializer</code> instruct how to turn the key and value objects the user provides with
  * their <code>ProducerRecord</code> into bytes. You can use the included {@link org.apache.kafka.common.serialization.ByteArraySerializer} or
