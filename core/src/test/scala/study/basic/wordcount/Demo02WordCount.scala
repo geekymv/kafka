@@ -9,9 +9,7 @@ object Demo02WordCount {
     val words = list.flatMap(t => t.split(" "))
     val wordCount = words.groupBy(t => t).mapValues(t => t.size)
 
-    for((k, v) <- wordCount) {
-      println(k, v)
-    }
+    wordCount.foreach(println)
   }
 
 }
