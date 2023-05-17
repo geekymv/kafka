@@ -88,8 +88,8 @@ public final class RecordAccumulator {
      * @param metrics The metrics
      * @param time The time instance to use
      */
-    public RecordAccumulator(int batchSize,
-                             long totalSize,
+    public RecordAccumulator(int batchSize, // 16KB
+                             long totalSize, // 32MB
                              CompressionType compression,
                              long lingerMs,
                              long retryBackoffMs,

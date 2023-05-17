@@ -77,6 +77,7 @@ public final class Cluster {
         this.clusterResource = new ClusterResource(clusterId);
         // make a randomized, unmodifiable copy of the nodes
         List<Node> copy = new ArrayList<>(nodes);
+        // 对 nodes 随机排序
         Collections.shuffle(copy);
         this.nodes = Collections.unmodifiableList(copy);
         this.nodesById = new HashMap<>();

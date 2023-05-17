@@ -119,6 +119,7 @@ public class Selector implements Selectable {
                     boolean metricsPerConnection,
                     ChannelBuilder channelBuilder) {
         try {
+            // 创建 nio selector
             this.nioSelector = java.nio.channels.Selector.open();
         } catch (IOException e) {
             throw new KafkaException(e);

@@ -48,6 +48,7 @@ public class ClientUtils {
                     InetSocketAddress address = new InetSocketAddress(host, port);
 
                     if (address.isUnresolved()) {
+                        // 判断地址是否可以被解析
                         log.warn("Removing server {} from {} as DNS resolution failed for {}", url, CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, host);
                     } else {
                         addresses.add(address);
