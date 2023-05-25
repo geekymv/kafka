@@ -28,6 +28,7 @@ import org.apache.kafka.common.utils.Utils;
 
 /**
  * The default partitioning strategy:
+ * 默认的分区策略
  * <ul>
  * <li>If a partition is specified in the record, use it
  * <li>If no partition is specified but a key is present choose a partition based on a hash of the key
@@ -50,10 +51,13 @@ public class DefaultPartitioner implements Partitioner {
      * @param cluster The current cluster metadata
      */
     public int partition(String topic, Object key, byte[] keyBytes, Object value, byte[] valueBytes, Cluster cluster) {
+        // 从 cluster 中获取 topic 对应的 partition info
         List<PartitionInfo> partitions = cluster.partitionsForTopic(topic);
         int numPartitions = partitions.size();
         if (keyBytes == null) {
+            // 没有指定的 key, 采用 round-robin 的方式
             int nextValue = counter.getAndIncrement();
+            // 获取可用的 partition info
             List<PartitionInfo> availablePartitions = cluster.availablePartitionsForTopic(topic);
             if (availablePartitions.size() > 0) {
                 int part = Utils.toPositive(nextValue) % availablePartitions.size();
@@ -64,6 +68,7 @@ public class DefaultPartitioner implements Partitioner {
             }
         } else {
             // hash the keyBytes to choose a partition
+            // 使用指定 key 的 hash 值
             return Utils.toPositive(Utils.murmur2(keyBytes)) % numPartitions;
         }
     }
