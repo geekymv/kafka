@@ -107,6 +107,7 @@ public class Compressor {
         }
 
         // create the stream
+        // ByteBufferOutputStream 是 Kafka 自定义的输出流类，底层是 ByteBuffer
         bufferStream = new ByteBufferOutputStream(buffer);
         appendStream = wrapForOutput(bufferStream, type, COMPRESSION_DEFAULT_BUFFER_SIZE);
     }
@@ -246,6 +247,7 @@ public class Compressor {
         try {
             switch (type) {
                 case NONE:
+                    // DataOutputStream 提供了将基本数据类型和字符串写入输出流的方法
                     return new DataOutputStream(buffer);
                 case GZIP:
                     return new DataOutputStream(new GZIPOutputStream(buffer, bufferSize));
@@ -309,7 +311,7 @@ public class Compressor {
     private static class MemoizingConstructorSupplier {
         final ConstructorSupplier delegate;
         transient volatile boolean initialized;
-        transient Constructor value;
+        transient Constructor value; // 缓存, 构造器
 
         public MemoizingConstructorSupplier(ConstructorSupplier delegate) {
             this.delegate = delegate;
