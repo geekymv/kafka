@@ -105,6 +105,7 @@ public final class RecordAccumulator {
         this.retryBackoffMs = retryBackoffMs;
         this.batches = new CopyOnWriteMap<>();
         String metricGrpName = "producer-metrics";
+        // 创建 buffer pool
         this.free = new BufferPool(totalSize, batchSize, metrics, time, metricGrpName);
         this.incomplete = new IncompleteRecordBatches();
         this.muted = new HashSet<>();
@@ -178,6 +179,7 @@ public final class RecordAccumulator {
             // we don't have an in-progress record batch try to allocate a new batch
             int size = Math.max(this.batchSize, Records.LOG_OVERHEAD + Record.recordSize(key, value));
             log.trace("Allocating a new {} byte message buffer for topic {} partition {}", size, tp.topic(), tp.partition());
+            // 申请内存
             ByteBuffer buffer = free.allocate(size, maxTimeToBlock);
             synchronized (dq) {
                 // Need to check if producer is closed again after grabbing the dequeue lock.
@@ -190,10 +192,13 @@ public final class RecordAccumulator {
                     free.deallocate(buffer);
                     return appendResult;
                 }
+                // 创建 MemoryRecords
                 MemoryRecords records = MemoryRecords.emptyRecords(buffer, compression, this.batchSize);
+                // 创建 RecordBatch
                 RecordBatch batch = new RecordBatch(tp, records, time.milliseconds());
+                // 将 key / value 放入 batch
                 FutureRecordMetadata future = Utils.notNull(batch.tryAppend(timestamp, key, value, callback, time.milliseconds()));
-
+                // 将 batch 放入 Deque
                 dq.addLast(batch);
                 incomplete.add(batch);
                 return new RecordAppendResult(future, dq.size() > 1 || batch.records.isFull(), true);
@@ -216,6 +221,7 @@ public final class RecordAccumulator {
             else
                 return new RecordAppendResult(future, deque.size() > 1 || last.records.isFull(), false);
         }
+        // 第一次执行到这里时是没有 batch 的
         return null;
     }
 

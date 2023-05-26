@@ -111,6 +111,7 @@ public final class BufferPool {
                 freeUp(size);
                 this.availableMemory -= size;
                 lock.unlock();
+                // ByteBuffer 申请内存
                 return ByteBuffer.allocate(size);
             } else {
                 // we are out of memory and will have to block

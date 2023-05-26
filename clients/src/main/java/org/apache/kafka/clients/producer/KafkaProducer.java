@@ -492,6 +492,7 @@ public class KafkaProducer<K, V> implements Producer<K, V> {
             RecordAccumulator.RecordAppendResult result = accumulator.append(tp, timestamp, serializedKey, serializedValue, interceptCallback, remainingWaitMs);
             if (result.batchIsFull || result.newBatchCreated) {
                 log.trace("Waking up the sender since topic {} partition {} is either full or getting a new batch", record.topic(), partition);
+                // 唤醒 Selector
                 this.sender.wakeup();
             }
             return result.future;
